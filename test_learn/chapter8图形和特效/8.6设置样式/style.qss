@@ -1,0 +1,9 @@
+MainWindow{
+    border-image:url(../img/python.jpg)
+}
+
+QToopTip{
+    border:1px solid rgb(45,45,45);
+    background:white;
+    color:red
+}
