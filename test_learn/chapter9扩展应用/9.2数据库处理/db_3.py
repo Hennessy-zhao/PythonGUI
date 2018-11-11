@@ -12,21 +12,56 @@ from PyQt5.QtGui import *
 from PyQt5.QtSql import *
 import sys
 
-class Demo(QWidget):
-    def __init__(self,parent=None):
-        super(Demo,self).__init__(parent)
+def initializeModel(model):
+    model.setTable('people')
+    model.setEditStrategy(QSqlTableModel.OnFieldChange)
+    model.select()
+    model.setHeaderData(0,Qt.Horizontal,'ID')
+    model.setHeaderData(1,Qt.Horizontal,'name')
+    model.setHeaderData(2,Qt.Horizontal,'address')
 
-        self.setWindowTitle("Demo")
-        self.resize(500,500)
-        self.move(200,200)
+def createView(title,model):
+    view=QTableView()
+    view.setModel(model)
+    view.setWindowTitle(title)
+    return view
 
+def addrow():
+    ret=model.insertRows(model.rowCount(),1)
+    print('insertRows=%s'%str(ret))
 
-
+def findrow(i):
+    delrow=i.row()
+    print('del row=%s'%str(delrow))
 
 if __name__=='__main__':
     app=QApplication(sys.argv)
-    form=Demo()
-    form.show()
+
+    db=QSqlDatabase.addDatabase('QMYSQL')
+    db.setDatabaseName("pyqttest")
+    db.setUserName("root")
+    db.setPassword("123456")
+
+    model=QSqlTableModel()
+    delrow=-1
+    initializeModel(model)
+    view1=createView("Table Model (View 1)",model)
+    view1.clicked.connect(findrow)
+
+    dig=QDialog()
+    layout=QVBoxLayout()
+    layout.addWidget(view1)
+    addBtn=QPushButton("添加一行")
+    addBtn.clicked.connect(addrow)
+    layout.addWidget(addBtn)
+
+    delBtn=QPushButton("删除一行")
+    delBtn.clicked.connect(lambda : model.removeRow(view1.currentIndex().row()))
+    layout.addWidget(delBtn)
+    dig.setLayout(layout)
+    dig.setWindowTitle("Database例子")
+    dig.resize(430,450)
+    dig.show()
     sys.exit(app.exec_())
 
 

@@ -22,9 +22,9 @@ def createDB():
     query.exec_("create table people(id int primary key,name varchar(20), address varchar(30))")
     query.exec_("insert into people values(1,'zhangsan1','BeiJing')")
     query.exec_("insert into people values(2,'lisi1','TianJin')")
-    query.exec_("insert into people values(1,'wangwu1','HeNan')")
-    query.exec_("insert into people values(1,'lisi1','HeBei')")
-    query.exec_("insert into people values(1,'wangwu2','BShanghai')")
+    query.exec_("insert into people values(3,'wangwu1','HeNan')")
+    query.exec_("insert into people values(4,'lisi1','HeBei')")
+    query.exec_("insert into people values(5,'wangwu2','BShanghai')")
     #关闭数据库
     db.close()
     return True
