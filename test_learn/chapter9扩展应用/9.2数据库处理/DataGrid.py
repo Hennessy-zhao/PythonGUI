@@ -75,6 +75,7 @@ class DataGrid(QWidget):
         operatorLayout.addWidget(self.switchPageLineEdit)
         operatorLayout.addWidget(page)
         operatorLayout.addWidget(self.switchPageButton)
+        #分割窗口类，加上去之后，上面的所有内容没有间隔的排列在左边
         operatorLayout.addWidget(QSplitter())
 
         # 状态布局
