@@ -13,7 +13,6 @@ class Demo(QWidget):
 
         #每页几行数据
         self.messageNum=5
-        self.currentPageNum = 1
         self.initUI()
 
 
@@ -25,7 +24,13 @@ class Demo(QWidget):
         # 创建表格
         self.createTable()
 
-        #按钮被按下
+        #前一页按钮被按下
+        self.preButton.clicked.connect(self.preButtonOnClick)
+
+        #后一页按钮被按下
+        self.nextButton.clicked.connect(self.nextButtonOnClick)
+
+        #查找页按钮被按下
         self.jumpButton.clicked.connect(self.jumpButtonOnClick)
 
     def closeEvent(self, event):
@@ -67,7 +72,6 @@ class Demo(QWidget):
         self.totalPage.setFixedWidth(20)
         self.currentPage=QLabel()
         self.currentPage.setFixedWidth(20)
-        self.currentPage.setText(str(self.currentPageNum))
         self.totalMessage=QLabel()
         self.totalMessage.setFixedWidth(20)
         self.bottomLayout=QHBoxLayout()
@@ -103,16 +107,27 @@ class Demo(QWidget):
         self.db.open()
         #声明查询模型
         self.queryModel=QSqlQueryModel(self)
-        #记录查询
-        self.recordQuery(0)
-        #设置模型
-        self.tableView.setModel(self.queryModel)
 
+        #设置当前页数
+        self.currentPageNum = 1
         #获取总页数
-        self.gettotalPageNum()
+        self.totalPageNum=self.gettotalPageNum()
+        # 获取总记录数
+        self.totalMessageNum = self.getMessageNum()
 
-        #获取总记录数
-        self.totalMessageNum=self.getMessageNum()
+        #刷新页面
+        self.updateStatus()
+
+        #设置总页数
+        self.settotalPageNum()
+        #设置总记录数
+        self.settotalMessageNum()
+
+
+        # 记录查询
+        self.recordQuery(0)
+        # 设置模型
+        self.tableView.setModel(self.queryModel)
 
 
 
@@ -129,37 +144,78 @@ class Demo(QWidget):
         self.queryModel.setQuery(szQuery)
 
 
-    #获取总页数并设置
+    #获取总页数
     def gettotalPageNum(self):
         count=self.getMessageNum()
         if count%self.messageNum==0:
             num=count/self.messageNum
         else:
             num=count/self.messageNum+1
-        self.totalPage.setText(str(int(num)))
         return num
 
+    #设置总页数
+    def settotalPageNum(self):
+        self.totalPage.setText(str(int(self.totalPageNum)))
 
-    #获取总记录数并设置
+
+    #获取总记录数
     def getMessageNum(self):
         self.queryModel.setQuery("select * from student")
         count=self.queryModel.rowCount()
-        self.totalMessage.setText(str(count))
         return count
+
+    #设置总记录数
+    def settotalMessageNum(self):
+        self.totalMessage.setText(str(int(self.totalMessageNum)))
+
+    #刷新页面
+    def updateStatus(self):
+        count=int(self.totalPageNum)
+
+        if self.currentPageNum==count:
+            self.preButton.setEnabled(True)
+            self.nextButton.setEnabled(False)
+        if self.currentPageNum==1:
+            self.preButton.setEnabled(False)
+            self.nextButton.setEnabled(True)
+
+        self.currentPage.setText(str(int(self.currentPageNum)))
+        self.jumplePage.setText('')
+
+    #前一页按钮被按下
+    def preButtonOnClick(self):
+        page=self.currentPageNum
+        page=int(page)
+        limit=page-2
+        self.currentPageNum=page-1
+        self.recordQuery(limit)
+        self.updateStatus()
+
+    #后一页按钮被按下
+    def nextButtonOnClick(self):
+        page = self.currentPageNum
+        page = int(page)
+        self.currentPageNum = page + 1
+        self.recordQuery(page)
+        self.updateStatus()
 
     #查找页数按钮被按下
     def jumpButtonOnClick(self):
         page=self.jumplePage.text()
-        count=int(self.gettotalPageNum())
+
+        count=int(self.totalPageNum)
+
         if not page.isdigit():
             QMessageBox.warning(self,'错误','抱歉，您输入的页码不是数字')
             return
-        page=int(page)
+        page = int(page)
         if page<1 or page >count:
             QMessageBox.warning(self,'错误','您输入的页码超出范围')
             return
-        limitnum=(count-1)*self.messageNum
+        limitnum=(page-1)*self.messageNum
+        self.currentPageNum=page
         self.recordQuery(limitnum)
+        self.updateStatus()
 
 
 if __name__=='__main__':
